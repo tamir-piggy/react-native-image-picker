@@ -182,14 +182,15 @@ public class Utils {
         try {
             int[] origDimens = getImageDimensions(uri, context);
 
-            if (!shouldResizeImage(origDimens[0], origDimens[1], options)) {
+            String mimeType =  getMimeTypeFromFileUri(uri);
+
+            if (!shouldResizeImage(origDimens[0], origDimens[1], options, mimeType)) {
                 return uri;
             }
 
             int[] newDimens = getImageDimensBasedOnConstraints(origDimens[0], origDimens[1], options);
 
             InputStream imageStream = context.getContentResolver().openInputStream(uri);
-            String mimeType =  getMimeTypeFromFileUri(uri);
             Bitmap b = BitmapFactory.decodeStream(imageStream);
             b = Bitmap.createScaledBitmap(b, newDimens[0], newDimens[1], true);
             String originalOrientation = getOrientation(uri, context);
@@ -260,7 +261,11 @@ public class Utils {
         return duration;
     }
 
-    static boolean shouldResizeImage(int origWidth, int origHeight, Options options) {
+    static boolean shouldResizeImage(int origWidth, int origHeight, Options options, String mimeType) {
+        if (mimeType.equals("image/gif")) {
+            return false;
+        }
+
         if ((options.maxWidth == 0 || options.maxHeight == 0) && options.quality == 100) {
             return false;
         }
@@ -287,6 +292,7 @@ public class Utils {
         switch (mimeType) {
             case "image/jpeg": return "jpg";
             case "image/png": return "png";
+            case "image/gif": return "gif";
         }
         return "jpg";
     }
